@@ -60,17 +60,17 @@ public class RobotContainer
     configureBindings();
     
 
-    AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase,
-                                                                   () -> MathUtil.applyDeadband(m_driveStick.getY(),
-                                                                                                OperatorConstants.LEFT_Y_DEADBAND),
-                                                                   () -> MathUtil.applyDeadband(m_driveStick.getX(),
-                                                                                                OperatorConstants.LEFT_X_DEADBAND),
-                                                                   () -> MathUtil.applyDeadband(m_driveStick.getZ(),
-                                                                                                OperatorConstants.RIGHT_X_DEADBAND),
-                                                                   () -> m_driverController.getRawButton(11),
-                                                                   () -> m_driverController.getRawButton(12),
-                                                                   () -> m_driverController.getRawButton(13),
-                                                                   () -> m_driverController.getRawButton(16));
+    // AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase,
+    //                                                                () -> MathUtil.applyDeadband(m_driveStick.getY(),
+    //                                                                                             OperatorConstants.LEFT_Y_DEADBAND),
+    //                                                                () -> MathUtil.applyDeadband(m_driveStick.getX(),
+    //                                                                                             OperatorConstants.LEFT_X_DEADBAND),
+    //                                                                () -> MathUtil.applyDeadband(m_driveStick.getZ(),
+    //                                                                                             OperatorConstants.RIGHT_X_DEADBAND),
+    //                                                                () -> m_driverController.getRawButton(11),
+    //                                                                () -> m_driverController.getRawButton(12),
+    //                                                                () -> m_driverController.getRawButton(13),
+    //                                                                () -> m_driverController.getRawButton(16));
 
     // Applies deadbands and inverts controls because joysticks
     // are back-right positive while robot
@@ -94,12 +94,12 @@ public class RobotContainer
     Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
         () -> MathUtil.applyDeadband(m_driveStick.getY(), OperatorConstants.LEFT_Y_DEADBAND),
         () -> MathUtil.applyDeadband(m_driveStick.getX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> MathUtil.applyDeadband(m_driveStick.getZ(), OperatorConstants.RIGHT_X_DEADBAND));
+        () -> MathUtil.applyDeadband(-m_driveStick.getZ(), OperatorConstants.RIGHT_X_DEADBAND));
 
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
         () -> MathUtil.applyDeadband(m_driveStick.getY(), OperatorConstants.LEFT_Y_DEADBAND),
         () -> MathUtil.applyDeadband(m_driveStick.getX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> MathUtil.applyDeadband(m_driveStick.getZ(), OperatorConstants.RIGHT_X_DEADBAND));
+        () -> MathUtil.applyDeadband(-m_driveStick.getZ(), OperatorConstants.RIGHT_X_DEADBAND));
 
     drivebase.setDefaultCommand(
         !RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
