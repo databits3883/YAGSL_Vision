@@ -11,6 +11,7 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -34,6 +35,7 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 public class SwerveSubsystem extends SubsystemBase
 {
 
+  private double m_offset = 0;
   /**
    * Swerve drive object.
    */
@@ -324,9 +326,19 @@ public class SwerveSubsystem extends SubsystemBase
    */
   public void zeroGyro()
   {
-    swerveDrive.zeroGyro();
+    // if (m_offset != 0) 
+    //   this.setGyroOffset(m_offset);
+    // else
+     swerveDrive.zeroGyro();
   }
 
+  public void setGyroOffset(double offset) {
+
+    //Rotation3d newRotation = 
+    //resetOdometry(new Pose2d(getPose().getTranslation(), new Rotation2d().fromDegrees(offset)));
+    m_offset = offset;
+    swerveDrive.setGyroOffset(new Rotation3d(0,0,offset));
+  }
 
   public void calibrate(double angle){
     swerveDrive.resetDriveEncoders();

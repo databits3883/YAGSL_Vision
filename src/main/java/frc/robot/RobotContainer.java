@@ -44,10 +44,10 @@ public class RobotContainer
   JoystickButton m_calibrateButton = new JoystickButton(m_driverController, 8);
 
   //Face forward
-  Pose2d defaultFaceForwardPose = new Pose2d(1,.5,Rotation2d.fromDegrees(-90));
+  Pose2d defaultFaceForwardPose = new Pose2d(2,7,Rotation2d.fromDegrees(0));
 
   //Face Right, move diagonal
-  Pose2d testMovePose = new Pose2d(1.5,1.5,Rotation2d.fromDegrees(-180));
+  Pose2d defaultZeroPosition = new Pose2d(0.33 ,0.33,Rotation2d.fromDegrees(0));
 
 
   //XboxController driverXbox = new XboxController(0);
@@ -93,23 +93,28 @@ public class RobotContainer
     // left stick controls translation
     // right stick controls the angular velocity of the robot
     Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
-        () -> MathUtil.applyDeadband(m_driveStick.getY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(-m_driveStick.getX(), OperatorConstants.LEFT_X_DEADBAND),
+        () -> MathUtil.applyDeadband(-m_driveStick.getX(), OperatorConstants.LEFT_Y_DEADBAND),
+        () -> MathUtil.applyDeadband(-m_driveStick.getY(), OperatorConstants.LEFT_X_DEADBAND),
         () -> MathUtil.applyDeadband(m_driveStick.getZ(), OperatorConstants.RIGHT_X_DEADBAND));
 
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
-        () -> MathUtil.applyDeadband(m_driveStick.getY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(-m_driveStick.getX(), OperatorConstants.LEFT_X_DEADBAND),
+        () -> MathUtil.applyDeadband(-m_driveStick.getX(), OperatorConstants.LEFT_Y_DEADBAND),
+        () -> MathUtil.applyDeadband(-m_driveStick.getY(), OperatorConstants.LEFT_X_DEADBAND),
         () -> MathUtil.applyDeadband(m_driveStick.getZ(), OperatorConstants.RIGHT_X_DEADBAND));
 
     drivebase.setDefaultCommand(
         !RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
 
-    //zero gyro
+        
+    
+    //zero gyro, set offset 90 degrees
+    //drivebase.setGyroOffset(Math.toRadians(-90));
+
     drivebase.zeroGyro();
 
+
     //Set default to robot on field position
-    drivebase.resetOdometry(defaultFaceForwardPose);
+    drivebase.resetOdometry(defaultZeroPosition);
 
   }
 
@@ -137,7 +142,7 @@ public class RobotContainer
   public Command getAutonomousCommand()
   {
     // An example command will be run in autonomous
-    return drivebase.getAutonomousCommand("New Path", true);
+    return drivebase.getAutonomousCommand("crazy", true);
   }
 
   public void setDriveMode()
