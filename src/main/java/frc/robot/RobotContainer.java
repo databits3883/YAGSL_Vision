@@ -10,16 +10,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.OIConstants;
-import frc.robot.commands.swervedrive.drivebase.AbsoluteDriveAdv;
 import frc.robot.subsystems.drive.FieldDriverStick;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -38,7 +35,7 @@ public class RobotContainer
   private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),"swerve/neo"));
   
   //Vision
-  VisionSubsystem robotVision = new VisionSubsystem(0.33D, 0.2286D, 0.0D);;
+  VisionSubsystem robotVision = new VisionSubsystem(Constants.VisionConstants.cameraY, Constants.VisionConstants.cameraX, Constants.VisionConstants.cameraZ);;
 
   // The driver's controller
   Joystick m_driverController = new Joystick(OIConstants.kDriverControllerPort);
@@ -46,7 +43,11 @@ public class RobotContainer
 
   JoystickButton m_calibrateButton = new JoystickButton(m_driverController, 8);
 
-  Pose2d defaultPose = new Pose2d(0,0,Rotation2d.fromDegrees(-180));
+  //Face forward
+  Pose2d defaultFaceForwardPose = new Pose2d(1,.5,Rotation2d.fromDegrees(-90));
+
+  //Face Right, move diagonal
+  Pose2d testMovePose = new Pose2d(1.5,1.5,Rotation2d.fromDegrees(-180));
 
 
   //XboxController driverXbox = new XboxController(0);
@@ -93,22 +94,22 @@ public class RobotContainer
     // right stick controls the angular velocity of the robot
     Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
         () -> MathUtil.applyDeadband(m_driveStick.getY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(m_driveStick.getX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> MathUtil.applyDeadband(-m_driveStick.getZ(), OperatorConstants.RIGHT_X_DEADBAND));
+        () -> MathUtil.applyDeadband(-m_driveStick.getX(), OperatorConstants.LEFT_X_DEADBAND),
+        () -> MathUtil.applyDeadband(m_driveStick.getZ(), OperatorConstants.RIGHT_X_DEADBAND));
 
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
         () -> MathUtil.applyDeadband(m_driveStick.getY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(m_driveStick.getX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> MathUtil.applyDeadband(-m_driveStick.getZ(), OperatorConstants.RIGHT_X_DEADBAND));
+        () -> MathUtil.applyDeadband(-m_driveStick.getX(), OperatorConstants.LEFT_X_DEADBAND),
+        () -> MathUtil.applyDeadband(m_driveStick.getZ(), OperatorConstants.RIGHT_X_DEADBAND));
 
     drivebase.setDefaultCommand(
         !RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
 
-    //Set default to robot facing left
-    //drivebase.resetOdometry(defaultPose);
-
     //zero gyro
     drivebase.zeroGyro();
+
+    //Set default to robot on field position
+    drivebase.resetOdometry(defaultFaceForwardPose);
 
   }
 
@@ -125,7 +126,7 @@ public class RobotContainer
 
     m_calibrateButton.onTrue((new InstantCommand(drivebase::zeroGyro)));
     new JoystickButton(m_driverController, 14).onTrue(new InstantCommand(robotVision::getClosestTarget));
-//    new JoystickButton(driverXbox, 3).whileTrue(new RepeatCommand(new InstantCommand(drivebase::lock, drivebase)));
+    //new JoystickButton(m_driverController, 11).onTrue(new InstantCommand));
   }
 
   /**

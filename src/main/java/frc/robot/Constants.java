@@ -62,4 +62,11 @@ public final class Constants
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
   }
 
+  public static final class VisionConstants
+  {
+    //Position of the camera from center of the robot in meters
+    public static final double cameraZ = Units.inchesToMeters(12.5);
+    public static final double cameraX = Units.inchesToMeters(1);
+    public static final double cameraY = Units.inchesToMeters(10);
+  }
 }
