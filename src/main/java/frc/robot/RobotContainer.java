@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -20,6 +21,8 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.drive.FieldDriverStick;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.subsystems.vision.VisionSubsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.io.File;
 
@@ -48,6 +51,12 @@ public class RobotContainer
 
   //Face Right, move diagonal
   Pose2d defaultZeroPosition = new Pose2d(0.33 ,0.33,Rotation2d.fromDegrees(0));
+
+  private final Command m_crazy = drivebase.getAutonomousCommand("crazy", true);
+  private final Command m_testPath = drivebase.getAutonomousCommand("Test Path", true);
+
+  SendableChooser<Command> m_chooser = new SendableChooser<>();
+
 
 
   //XboxController driverXbox = new XboxController(0);
@@ -114,8 +123,13 @@ public class RobotContainer
 
 
     //Set default to robot on field position
-    drivebase.resetOdometry(defaultZeroPosition);
+    //drivebase.resetOdometry(defaultZeroPosition);
+    drivebase.resetOdometry(defaultFaceForwardPose);
 
+    m_chooser.setDefaultOption("Test Path", m_testPath);
+    m_chooser.addOption("Crazy", m_crazy);
+
+    SmartDashboard.putData(m_chooser);
   }
 
   /**
@@ -142,7 +156,8 @@ public class RobotContainer
   public Command getAutonomousCommand()
   {
     // An example command will be run in autonomous
-    return drivebase.getAutonomousCommand("crazy", true);
+    
+    return m_chooser.getSelected();
   }
 
   public void setDriveMode()
