@@ -5,24 +5,36 @@
 package frc.robot.subsystems.swervedrive;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
+import frc.robot.RobotContainer;
+
 import java.io.File;
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
+
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.targeting.PhotonTrackedTarget;
+
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.math.SwerveMath;
@@ -262,6 +274,87 @@ public class SwerveSubsystem extends SubsystemBase
   @Override
   public void periodic()
   {
+    
+
+    if(!RobotState.isAutonomous()) {
+      PhotonTrackedTarget target = RobotContainer.robotVision.getTarget();
+      if (target != null) {
+        int id = target.getFiducialId();
+        Optional<Pose3d> hasTargetPost = RobotContainer.robotVision.getAprilTagPose(id);
+        if (hasTargetPost.isPresent())
+        {
+          Pose3d targetPose = hasTargetPost.get();
+System.out.println("targetPose X/Y: " + targetPose.getX() + " / " + targetPose.getY());
+          Transform3d cameraToTarget = target.
+
+/* 
+          Transform3d cameraToTarget = target.getBestCameraToTarget();
+System.out.println("cameraToTarget X/Y: " + cameraToTarget.getX() + " / " + cameraToTarget.getY());
+          Pose2d robotPosition = targetPose.transformBy(cameraToTarget).toPose2d();
+System.out.println("robotPosition X/Y: " + robotPosition.getX() + " / " + robotPosition.getY());
+         addVisionMeasurement(robotPosition, System.currentTimeMillis());
+*/
+
+         if (RobotContainer.robotVision.getEstimatedGlobalPose().isPresent()) {
+            System.out.println("Got New Position");          
+
+            EstimatedRobotPose estimatedRobotPose = RobotContainer.robotVision.getEstimatedGlobalPose().get();
+System.out.println("estimatedRobotPose X/Y: " + estimatedRobotPose.estimatedPose.getX() + " / " + estimatedRobotPose.estimatedPose.getY());
+            addVisionMeasurement(estimatedRobotPose.estimatedPose.toPose2d(), estimatedRobotPose.timestampSeconds);
+         }
+        }
+        else
+        {
+          System.out.println("NOT PRESENT!!");
+        }
+//         if (RobotContainer.robotVision.getEstimatedGlobalPose().isPresent()) {
+// System.out.println("Got New Position");          
+//           EstimatedRobotPose estimatedRobotPose = RobotContainer.robotVision.getEstimatedGlobalPose().get();
+// System.out.println(estimatedRobotPose);
+//           addVisionMeasurement(estimatedRobotPose.estimatedPose.toPose2d(), estimatedRobotPose.timestampSeconds);
+//         }
+/*
+          Optional<EstimatedRobotPose> estimatedPose = RobotContainer.robotVision.getEstimatedGlobalPose(getPose());
+
+          if(estimatedPose.isPresent()) {
+            Pose3d robotPose = estimatedPose.get().estimatedPose;
+            Pose2d robotPose2d = estimatedPose.get().estimatedPose.toPose2d();
+
+
+            swerveDrive.addVisionMeasurement(robotPose2d, Timer.getFPGATimestamp());
+        //You should not call the below, according to other posts, but maybe we need it, try it first and comment out later.
+            swerveDrive.setGyroOffset(robotPose.getRotation());
+          }
+
+        swerveDrive.updateOdometry();
+        log("Gyro", swerveDrive.getYaw().getDegrees());
+        log("Swerve States", swerveDrive.getStates());
+        log("Pose", swerveDrive.getPose());
+ */
+       }
+    }
+
+  }
+  
+  
+  /**
+   * Drive to a given pose using the PathPlanner code
+   * @param pose
+   * @return
+   */
+  public Command driveToPose(Pose2d pose)
+  {
+// Create the constraints to use while pathfinding
+    PathConstraints constraints = new PathConstraints(
+        swerveDrive.getMaximumVelocity(), 4.0,
+        swerveDrive.getMaximumAngularVelocity(), Units.degreesToRadians(720));
+// Since AutoBuilder is configured, we can use it to build pathfinding commands
+    return AutoBuilder.pathfindToPose(
+        pose,
+        constraints,
+        0.0, // Goal end velocity in meters/sec
+        0.0 // Rotation delay distance in meters. This is how far the robot should travel before attempting to rotate.
+                                     );
   }
 
   @Override
@@ -476,4 +569,9 @@ public class SwerveSubsystem extends SubsystemBase
   {
     swerveDrive.addVisionMeasurement(new Pose2d(3, 3, Rotation2d.fromDegrees(65)), Timer.getFPGATimestamp());
   }
+
+  public void addVisionMeasurement(Pose2d robotPose, double timeStamp) {
+    swerveDrive.addVisionMeasurement(robotPose, timeStamp);
+
+  }  
 }

@@ -38,7 +38,7 @@ public class RobotContainer
   private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),"swerve/neo"));
   
   //Vision
-  VisionSubsystem robotVision = new VisionSubsystem(Constants.VisionConstants.cameraY, Constants.VisionConstants.cameraX, Constants.VisionConstants.cameraZ);;
+  public static VisionSubsystem robotVision = new VisionSubsystem(Constants.VisionConstants.cameraY, Constants.VisionConstants.cameraX, Constants.VisionConstants.cameraZ);;
 
   // The driver's controller
   Joystick m_driverController = new Joystick(OIConstants.kDriverControllerPort);
@@ -144,7 +144,7 @@ public class RobotContainer
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
 
     m_calibrateButton.onTrue((new InstantCommand(drivebase::zeroGyro)));
-    new JoystickButton(m_driverController, 14).onTrue(new InstantCommand(robotVision::getClosestTarget));
+    new JoystickButton(m_driverController, 14).onTrue(new InstantCommand(robotVision::debugClosestTarget));
     //new JoystickButton(m_driverController, 11).onTrue(new InstantCommand));
   }
 
