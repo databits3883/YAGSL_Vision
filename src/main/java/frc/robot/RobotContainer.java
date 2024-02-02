@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.io.File;
+import java.util.Optional;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -38,7 +40,7 @@ public class RobotContainer
   private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),"swerve/neo"));
   
   //Vision
-  public static VisionSubsystem robotVision = new VisionSubsystem(Constants.VisionConstants.cameraY, Constants.VisionConstants.cameraX, Constants.VisionConstants.cameraZ);;
+  public static VisionSubsystem robotVision = new VisionSubsystem(Constants.VisionConstants.cameraY, Constants.VisionConstants.cameraX, Constants.VisionConstants.cameraZ, Constants.VisionConstants.cameraName);
 
   // The driver's controller
   Joystick m_driverController = new Joystick(OIConstants.kDriverControllerPort);
@@ -47,19 +49,37 @@ public class RobotContainer
   JoystickButton m_calibrateButton = new JoystickButton(m_driverController, 8);
 
   //Face forward
-  Pose2d defaultFaceForwardPose = new Pose2d(2,7,Rotation2d.fromDegrees(0));
+  Pose2d blueOnePose = new Pose2d(2,7,Rotation2d.fromDegrees(0));
+  Pose2d redOnePose = new Pose2d(10, 7, Rotation2d.fromDegrees(180));
 
   //Face Right, move diagonal
   Pose2d defaultZeroPosition = new Pose2d(0.33 ,0.33,Rotation2d.fromDegrees(0));
 
-  private final Command m_crazy = drivebase.getAutonomousCommand("crazy", true);
-  private final Command m_testPath = drivebase.getAutonomousCommand("Test Path", true);
+  private final Command m_rev180 = drivebase.getAutonomousCommand("rev180", true);
+  //private final Command m_testPath = drivebase.getAutonomousCommand("Test Path", true);
 
   SendableChooser<Command> m_chooser = new SendableChooser<>();
 
-
+  public static DriverStation.Alliance allianceColor = DriverStation.Alliance.Blue;
 
   //XboxController driverXbox = new XboxController(0);
+
+  public static boolean isRedAlliance() {
+    return allianceColor == DriverStation.Alliance.Red;
+  }
+
+  public static boolean isBlueAlliance() {
+    return allianceColor == DriverStation.Alliance.Blue;
+  }
+
+  public static void setAlliance(Optional<DriverStation.Alliance> color) {
+    if (color.isPresent()) {
+      DriverStation.Alliance currentColor = allianceColor;      
+      allianceColor = color.get();
+      if (allianceColor != currentColor)
+        System.out.println("Changed colors to " +(isBlueAlliance()?"Blue":"Red"));
+    }
+  }
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -124,12 +144,19 @@ public class RobotContainer
 
     //Set default to robot on field position
     //drivebase.resetOdometry(defaultZeroPosition);
-    drivebase.resetOdometry(defaultFaceForwardPose);
+    //drivebase.resetOdometry(defaultFaceForwardPose);
+    if (isRedAlliance()) {
+      drivebase.resetOdometry(redOnePose);
+    } else {
+      drivebase.resetOdometry(blueOnePose);
+    }
 
-    m_chooser.setDefaultOption("Test Path", m_testPath);
-    m_chooser.addOption("Crazy", m_crazy);
+    //m_chooser.setDefaultOption("Test Path", m_testPath);
+    m_chooser.setDefaultOption("rev180", m_rev180);
 
     SmartDashboard.putData(m_chooser);
+
+    
   }
 
   /**

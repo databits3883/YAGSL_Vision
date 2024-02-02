@@ -7,6 +7,7 @@ package frc.robot.subsystems.swervedrive;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.PathPlannerTrajectory;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
@@ -24,11 +25,13 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
@@ -153,13 +156,27 @@ public class SwerveSubsystem extends SubsystemBase
   {
     // Load the path you want to follow using its name in the GUI
     PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+    StringBuffer outputStr = new StringBuffer();
+    outputStr.append("Odom: " + setOdomToStart);
 
     if (setOdomToStart)
     {
-      resetOdometry(new Pose2d(path.getPoint(0).position, getHeading()));
+      //Get the initial pose with alliance switching
+      Pose2d initialPose = path.getPreviewStartingHolonomicPose();
+
+      outputStr.append("Setting odom  X: " + initialPose.getX() + " / Y: " + initialPose.getY());
+      resetOdometry(initialPose);
     }
 
     // Create a path following command using AutoBuilder. This will also trigger event markers.
+    
+    //return new PrintCommand(outputStr.toString());
+System.out.println(outputStr.toString());
+     //BAD CODE BELOW..
+     try {
+           Thread.sleep(100);
+     } catch(Exception e) {}
+
     return AutoBuilder.followPath(path);
   }
 
@@ -274,7 +291,6 @@ public class SwerveSubsystem extends SubsystemBase
   @Override
   public void periodic()
   {
-    
 
     if(!RobotState.isAutonomous()) {
       PhotonTrackedTarget target = RobotContainer.robotVision.getTarget();
@@ -285,7 +301,6 @@ public class SwerveSubsystem extends SubsystemBase
         {
           Pose3d targetPose = hasTargetPost.get();
 System.out.println("targetPose X/Y: " + targetPose.getX() + " / " + targetPose.getY());
-          Transform3d cameraToTarget = target.
 
 /* 
           Transform3d cameraToTarget = target.getBestCameraToTarget();
@@ -295,17 +310,25 @@ System.out.println("robotPosition X/Y: " + robotPosition.getX() + " / " + robotP
          addVisionMeasurement(robotPosition, System.currentTimeMillis());
 */
 
-         if (RobotContainer.robotVision.getEstimatedGlobalPose().isPresent()) {
-            System.out.println("Got New Position");          
+          Optional<EstimatedRobotPose> opRobotPose = RobotContainer.robotVision.getEstimatedGlobalPose();
 
-            EstimatedRobotPose estimatedRobotPose = RobotContainer.robotVision.getEstimatedGlobalPose().get();
+         if (opRobotPose != null) {
+            System.out.println("Got New Position");          
+            if (opRobotPose.isPresent()) {
+System.out.println("Position present");
+            EstimatedRobotPose estimatedRobotPose = opRobotPose.get();
 System.out.println("estimatedRobotPose X/Y: " + estimatedRobotPose.estimatedPose.getX() + " / " + estimatedRobotPose.estimatedPose.getY());
             addVisionMeasurement(estimatedRobotPose.estimatedPose.toPose2d(), estimatedRobotPose.timestampSeconds);
+          }
+         } 
+         else
+         {
+            System.out.println("POSE NOT PRESENT!!");
          }
         }
         else
         {
-          System.out.println("NOT PRESENT!!");
+          System.out.println("TARGET NOT PRESENT!!");
         }
 //         if (RobotContainer.robotVision.getEstimatedGlobalPose().isPresent()) {
 // System.out.println("Got New Position");          

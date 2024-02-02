@@ -64,9 +64,13 @@ public final class Constants
 
   public static final class VisionConstants
   {
+    //Camera name in network tables
+    public static final String cameraName = "Camera_Module_v1";
     //Position of the camera from center of the robot in meters
-    public static final double cameraZ = Units.inchesToMeters(12.5);
+    public static final double cameraZ = Units.inchesToMeters(14.25);
     public static final double cameraX = Units.inchesToMeters(1);
     public static final double cameraY = Units.inchesToMeters(10);
+    //Pipeline name in network tables
+    public static final String pipelineName = "apriltag";
   }
 }

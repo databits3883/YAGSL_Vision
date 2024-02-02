@@ -27,9 +27,9 @@ public class VisionSubsystem  extends SubsystemBase {
    private PhotonPoseEstimator photonPoseEstimator;
    private PhotonPipelineResult pipelineResult;
 
-   public VisionSubsystem(double cameraFrontToBackInMeters, double cameraSideToSideInMeters, double cameraHeightInMeters) {
+   public VisionSubsystem(double cameraFrontToBackInMeters, double cameraSideToSideInMeters, double cameraHeightInMeters, String cameraName) {
       System.out.println("Vision: About to connect to camera");
-      this.camera = new PhotonCamera("Camera_Module_v1");
+      this.camera = new PhotonCamera(cameraName);
       System.out.println("Vision: got Camera: " + this.camera.getName());
       pipelineResult = new PhotonPipelineResult();
       
@@ -78,13 +78,12 @@ public class VisionSubsystem  extends SubsystemBase {
 
       if(hasTargets) {
          target = result.getBestTarget();
-         
       }
       return target;
    }
 
    public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
-      return photonPoseEstimator.update(this.camera.getLatestResult());
+      return photonPoseEstimator.update(pipelineResult);
    }
 
    public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d previousPose) {
