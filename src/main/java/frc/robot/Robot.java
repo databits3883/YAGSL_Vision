@@ -8,8 +8,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.io.File;
@@ -28,6 +26,7 @@ public class Robot extends TimedRobot
   private        Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+  private boolean didAutoRun = false;
 
   private Timer disabledTimer;
 
@@ -104,6 +103,7 @@ public class Robot extends TimedRobot
   @Override
   public void autonomousInit()
   {
+    didAutoRun = true;
     m_robotContainer.setMotorBrake(true);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
@@ -135,6 +135,8 @@ public class Robot extends TimedRobot
     }
     m_robotContainer.setDriveMode();
     m_robotContainer.setMotorBrake(true);
+    //Will probably want to get rid of this.., if we did not run an auto set initial state of robot
+    if (!didAutoRun) m_robotContainer.setInitialPose();
   }
 
   /**

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import swervelib.math.Matter;
@@ -23,6 +25,7 @@ public final class Constants
   public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
   public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
   public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
+  public static final double FIELD_WIDTH = Units.inchesToMeters(653.2);  // (76.1 + 250.5 ) * 2 = 653.2 inches
 
   public static final class Auton
   {
@@ -72,5 +75,22 @@ public final class Constants
     public static final double cameraY = Units.inchesToMeters(10);
     //Pipeline name in network tables
     public static final String pipelineName = "apriltag";
+  }
+
+  public static final class PoseConstants
+  {
+    public static final Pose2d chainID15 = new Pose2d(4.45, 4.94, Rotation2d.fromDegrees(-60));
+    public static final Pose2d chainID14 = new Pose2d(5.86, 4.11, Rotation2d.fromDegrees(180));
+    public static final Pose2d chainID16 = new Pose2d(4.45, 3.27, Rotation2d.fromDegrees(60));
+
+    public static final Pose2d blueOnePose = new Pose2d(2,7,Rotation2d.fromDegrees(0));
+    public static final Pose2d redOnePose = new Pose2d(Constants.FIELD_WIDTH - 2, 7, Rotation2d.fromDegrees(180));
+    public static final Pose2d blueTwoPose = new Pose2d(2,6,Rotation2d.fromDegrees(0));
+    public static final Pose2d redTwoPose = new Pose2d(Constants.FIELD_WIDTH - 2, 6, Rotation2d.fromDegrees(180));
+    public static final Pose2d blueThreePose = new Pose2d(2,5,Rotation2d.fromDegrees(0));
+    public static final Pose2d redThreePose = new Pose2d(Constants.FIELD_WIDTH - 2, 5, Rotation2d.fromDegrees(180));
+    public static final Pose2d[] initRobotPoses = {blueOnePose, blueTwoPose, blueThreePose, redOnePose, redTwoPose, redThreePose};
+  
+    public static final Pose2d autoEndPose = new Pose2d(5.891426328307202, 6.045027362781998, Rotation2d.fromDegrees(90));
   }
 }
