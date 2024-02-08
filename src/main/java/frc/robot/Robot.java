@@ -105,13 +105,17 @@ public class Robot extends TimedRobot
   {
     didAutoRun = true;
     m_robotContainer.setMotorBrake(true);
+
+    //Set initial state, will probably get overridden in the selected auto routine
+    m_robotContainer.setInitialPose();
+
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null)
     {
       m_autonomousCommand.schedule();
-    }
+    }    
   }
 
   /**
@@ -119,7 +123,7 @@ public class Robot extends TimedRobot
    */
   @Override
   public void autonomousPeriodic()
-  {
+  {    
   }
 
   @Override
@@ -135,8 +139,12 @@ public class Robot extends TimedRobot
     }
     m_robotContainer.setDriveMode();
     m_robotContainer.setMotorBrake(true);
-    //Will probably want to get rid of this.., if we did not run an auto set initial state of robot
-    if (!didAutoRun) m_robotContainer.setInitialPose();
+
+    //if we did not run an auto set initial state of robot
+    if (!didAutoRun) 
+    {
+      m_robotContainer.setInitialPose();
+    }
   }
 
   /**
@@ -154,7 +162,7 @@ public class Robot extends TimedRobot
     CommandScheduler.getInstance().cancelAll();
     try
     {
-      new SwerveParser(new File(Filesystem.getDeployDirectory(), "swerve"));
+      new SwerveParser(new File(Filesystem.getDeployDirectory(), Constants.ROBOT_FROGGY_CONFIG_LOCATION));
     } catch (IOException e)
     {
       throw new RuntimeException(e);

@@ -53,7 +53,7 @@ public class VisionSubsystem  extends SubsystemBase {
    }
 
    public Pose2d debugClosestTarget() {
-      Pose2d estimatedRobotPose = null;
+      Pose2d visionEstimatedRobotPose = null;
       PhotonTrackedTarget target = null;
       PhotonPipelineResult result = this.camera.getLatestResult();
       boolean hasTargets = result.hasTargets();
@@ -72,27 +72,21 @@ public class VisionSubsystem  extends SubsystemBase {
          System.out.println("vision: got poseAmbiguity: " + poseAmbiguity);
          Transform3d bestCameraToTarget = target.getBestCameraToTarget();
          System.out.println("bestCameraToTarget X/Y/Rotate: " + bestCameraToTarget.getX() + " / " + bestCameraToTarget.getY() + "/" + bestCameraToTarget.getRotation());
-         Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
-         //System.out.println("alternateCameraToTarget X/Y/Rotate: " + alternateCameraToTarget.getX() + " / " + alternateCameraToTarget.getY() + "/" + alternateCameraToTarget.getRotation());
          Optional<Pose3d> aprilPoseOptional = aprilTagFieldLayout.getTagPose(targetID);
-         if (aprilPoseOptional.isPresent()) {
-            estimatedRobotPose = aprilPoseOptional.get().toPose2d();
-System.out.println("AprilTag Position X/Y/Rotate: " + estimatedRobotPose.getX() + " / " + estimatedRobotPose.getY() + "/" + estimatedRobotPose.getRotation());  
-               // -90
-            estimatedRobotPose = new Pose2d(estimatedRobotPose.getX() - bestCameraToTarget.getX(), 
-                                          estimatedRobotPose.getY() + bestCameraToTarget.getY(),
-                                          Rotation2d.fromDegrees(estimatedRobotPose.getRotation().getDegrees() + 180 + bestCameraToTarget.getRotation().toRotation2d().getDegrees()));
-System.out.println("Estimated Robot Position X/Y/Rotate: " + estimatedRobotPose.getX() + " / " + estimatedRobotPose.getY() + "/" + estimatedRobotPose.getRotation()); 
-            Optional<EstimatedRobotPose> globalVision = getEstimatedGlobalPose();
-            if (globalVision != null && globalVision.isPresent()) {
-               Pose2d globalVisionPose = globalVision.get().estimatedPose.toPose2d();
-               System.out.println("Estimated Robot Position X/Y/Rotate: " + globalVisionPose.getX() + " / " + globalVisionPose.getY() + "/" + globalVisionPose.getRotation());  
+         Pose2d appriltagPose = (aprilPoseOptional.isPresent() ? aprilPoseOptional.get().toPose2d() : null);
+         if (appriltagPose != null) {
+            System.out.println("AprilTag Position X/Y/Rotate: " + appriltagPose.getX() + " / " + appriltagPose.getY() + "/" + appriltagPose.getRotation());  
+
+            Pose3d estimatedRobotPose = (getEstimatedGlobalPose().isPresent() ? getEstimatedGlobalPose().get().estimatedPose : null);
+            if (estimatedRobotPose != null) {
+               visionEstimatedRobotPose = estimatedRobotPose.toPose2d();
+               System.out.println("Estimated Robot Position X/Y/Rotate: " + visionEstimatedRobotPose.getX() + " / " + visionEstimatedRobotPose.getY() + "/" + visionEstimatedRobotPose.getRotation());  
             }
          }
       } else {
          System.out.println("Vision: number of targets: 0");
       }
-      return estimatedRobotPose;
+      return visionEstimatedRobotPose;
 
    }
 

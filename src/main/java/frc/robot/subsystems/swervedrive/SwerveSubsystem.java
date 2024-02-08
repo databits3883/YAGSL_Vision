@@ -33,7 +33,6 @@ import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import swervelib.SwerveController;
@@ -98,18 +97,6 @@ public class SwerveSubsystem extends SubsystemBase {
     swerveDrive.setHeadingCorrection(false); // Heading correction should only be used while controlling the robot via
                                              // angle.
       
-    //rotate bot 180 if in red alliance
-
-
-    var alliance = DriverStation.getAlliance();
-    if (alliance.isPresent() && (alliance.get() == DriverStation.Alliance.Red))
-    {
-      //todo
-      //swerveDrive.setGyro(new Rotation3d().);
-      //swerveDrive.setGyroOffset(new Rotation2d().fromDegrees(180));
-    }
-
-
     setupPathPlanner();
   }
 
@@ -206,6 +193,7 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param headingX     Heading X to calculate angle of the joystick.
    * @param headingY     Heading Y to calculate angle of the joystick.
    * @return Drive command.
+
    */
   public Command driveCommand(DoubleSupplier translationX, DoubleSupplier translationY, DoubleSupplier headingX,
       DoubleSupplier headingY) {
@@ -332,6 +320,8 @@ public class SwerveSubsystem extends SubsystemBase {
         isLogging = true;
       }
 
+      //Currently comment out auto vision tracking.  We can probably put this back in place
+      //Will want to check poseAmbiguity and if less than 0.21 then update, otherwise ignore vision pose
       if (1==0){
       PhotonTrackedTarget target = RobotContainer.robotVision.getTarget();
       if (target != null) {
@@ -450,30 +440,19 @@ public class SwerveSubsystem extends SubsystemBase {
    * facing toward 0.
    */
   public void zeroGyro() {
-    // if (m_offset != 0)
-    //if (RobotContainer.isRedAlliance())
-      //setGyroOffset(180);
-    // this.setGyroOffset(m_offset);
-    // else
     swerveDrive.zeroGyro();
   }
 
-  public void setGyroOffset(double offset) {
-
-    // Rotation3d newRotation =
-    // resetOdometry(new Pose2d(getPose().getTranslation(), new
-    // Rotation2d().fromDegrees(offset)));
-    // m_offset = offset;
-    swerveDrive.setGyroOffset(new Rotation3d(0, 0, offset));
+  /**
+   * This will set the gyro offset, not used at the moment
+   * @param gyroOffset
+   */
+  public void setGyroOffset(Rotation3d gyroOffset) {
+    swerveDrive.setGyroOffset(gyroOffset);
   }
 
   public void calibrate(double angle) {
     swerveDrive.resetDriveEncoders();
-
-    // m_allCalibrated = true;
-
-    // Rotation2d defaultGyro
-    // swerveDrive.setGyroOffset(angle);
   }
 
   /**
@@ -607,7 +586,6 @@ public class SwerveSubsystem extends SubsystemBase {
     swerveDrive.resetOdometry(debugTarget);
     }
   }
-
 
 
   public void addVisionMeasurement(Pose2d robotPose, double timeStamp) {

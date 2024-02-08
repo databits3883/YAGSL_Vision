@@ -27,6 +27,8 @@ public final class Constants
   public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
   public static final double FIELD_WIDTH = Units.inchesToMeters(653.2);  // (76.1 + 250.5 ) * 2 = 653.2 inches
 
+  public static final String ROBOT_FROGGY_CONFIG_LOCATION = "swerve/neo";
+
   public static final class Auton
   {
 

@@ -6,6 +6,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -28,11 +29,7 @@ import java.io.File;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-import org.photonvision.PhotonCamera;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-
-import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.auto.AutoBuilder;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -43,7 +40,7 @@ public class RobotContainer
 {
 
   // The robot's subsystems and commands are defined here...
-  private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),"swerve/neo"));
+  private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),Constants.ROBOT_FROGGY_CONFIG_LOCATION));
   
   //Vision
   public static VisionSubsystem robotVision = new VisionSubsystem(Constants.VisionConstants.cameraY, Constants.VisionConstants.cameraX, Constants.VisionConstants.cameraZ, Constants.VisionConstants.cameraName);
@@ -54,16 +51,8 @@ public class RobotContainer
 
   JoystickButton m_calibrateButton = new JoystickButton(m_driverController, 8);
 
-  //Face forward
-
-
-  //Face Right, move diagonal
-  //Pose2d defaultZeroPosition = new Pose2d(0.33 ,0.33,Rotation2d.fromDegrees(0));
-
-  private final Command m_rev180 = drivebase.getAutonomousCommand("rev180", true);
-  //private final Command m_testPath = drivebase.getAutonomousCommand("Test Path", true);
-
-  SendableChooser<Command> m_chooser = new SendableChooser<>();
+  // Build an auto chooser. This will use Commands.none() as the default option.
+  SendableChooser<Command> m_autoChooser = AutoBuilder.buildAutoChooser();
 
   public static DriverStation.Alliance allianceColor = DriverStation.Alliance.Blue;
 
@@ -81,10 +70,11 @@ public class RobotContainer
       DriverStation.Alliance currentColor = allianceColor;      
       allianceColor = color.get();
       if (!allianceColor.equals(currentColor))
-        System.out.println("Changed colors to " +(isBlueAlliance()?"Blue":"Red"));
+      {
+        System.out.println("Changed alliance to " +(isBlueAlliance()?"Blue":"Red"));
+      }
     }
   }
-
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -139,16 +129,12 @@ public class RobotContainer
     drivebase.setDefaultCommand(
         !RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
 
+    //Set default position to what is currently select in Drive's Station
+    setInitialPose();
 
     drivebase.zeroGyro();
-
-    //m_chooser.setDefaultOption("Test Path", m_testPath);
-    m_chooser.setDefaultOption("autoLine", new PathPlannerAuto("autoLine"));
-    m_chooser.addOption("rev180", m_rev180);
-    //m_chooser.addOption("aroundChains", new PathPlannerAuto("aroundChains"));
-
-    SmartDashboard.putData(m_chooser);
-    
+    //Add the auto chooser to the smart dashboard
+    SmartDashboard.putData("Auto Chooser", m_autoChooser);    
   }
 
   /**
@@ -180,12 +166,17 @@ public class RobotContainer
    */
   private void configureBindings()
   {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
+    //Calibrate the robot button
+    m_calibrateButton.onTrue((new InstantCommand(this::zeroGyroWithAlliance)));
 
-    m_calibrateButton.onTrue((new InstantCommand(drivebase::zeroGyro)));
+    //Debug vision button
     new JoystickButton(m_driverController, 14).onTrue(new InstantCommand(drivebase::visionPose));
-    //new JoystickButton(m_driverController, 11).onTrue(new InstantCommand));
+
+    //Test drive to post button
     new JoystickButton(m_driverController, 13).onTrue(drivebase.driveToPose(Constants.PoseConstants.autoEndPose));
+
+    //Test aim at a target function, no idea if it works
+    //TODO: TEST this
     new JoystickButton(m_driverController, 15).onTrue(drivebase.aimAtTarget(robotVision.getTarget()));
   }
 
@@ -198,7 +189,7 @@ public class RobotContainer
   {
     // An example command will be run in autonomous
     
-    return m_chooser.getSelected();
+    return m_autoChooser.getSelected();
   }
 
   public void setDriveMode()
@@ -211,5 +202,21 @@ public class RobotContainer
     drivebase.setMotorBrake(brake);
   }
 
+  /**
+   * This will zero (calibrate) the robot to assume the current position is facing forward
+   * 
+   * If red alliance rotate the robot 180 after the drviebase zero command
+   */
+  public void zeroGyroWithAlliance()
+  {
+      if (isRedAlliance())
+      {
+        drivebase.zeroGyro();
+        //Set the pose 180 degrees
+        drivebase.resetOdometry(new Pose2d(drivebase.getPose().getTranslation(), Rotation2d.fromDegrees(180)));
+      } else {
+         drivebase.zeroGyro();      
+      }
+  }
   
 }
