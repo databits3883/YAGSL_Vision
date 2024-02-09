@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 
@@ -37,6 +38,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
+import swervelib.SwerveDriveTest;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
@@ -322,7 +324,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
       //Currently comment out auto vision tracking.  We can probably put this back in place
       //Will want to check poseAmbiguity and if less than 0.21 then update, otherwise ignore vision pose
-      if (1==0){
+      if (Constants.VisionConstants.autoUpdatePose){
+        
       PhotonTrackedTarget target = RobotContainer.robotVision.getTarget();
       if (target != null) {
         int id = target.getFiducialId();
@@ -332,6 +335,8 @@ public class SwerveSubsystem extends SubsystemBase {
           // System.out.println("targetPose X/Y: " + targetPose.getX() + " / " +
           // targetPose.getY());
 
+          if(target.getPoseAmbiguity() >= Constants.VisionConstants.acceptibleAmbiguity)
+             return;
           Optional<EstimatedRobotPose> opRobotPose = RobotContainer.robotVision.getEstimatedGlobalPose();
 
           if (opRobotPose != null) {
@@ -355,7 +360,7 @@ public class SwerveSubsystem extends SubsystemBase {
           System.out.println(logOutput.toString());
 
       }
-    }//enmd if 1==0
+    }// end if autoUpdate vision = true
     }
 
   }
@@ -583,7 +588,7 @@ public class SwerveSubsystem extends SubsystemBase {
     Pose2d debugTarget = RobotContainer.robotVision.debugClosestTarget();
     if(debugTarget != null){
     //  swerveDrive.addVisionMeasurement(debugTarget, currentTimeMillis);
-    swerveDrive.resetOdometry(debugTarget);
+      swerveDrive.resetOdometry(debugTarget);
     }
   }
 
@@ -629,6 +634,16 @@ public class SwerveSubsystem extends SubsystemBase {
                               Rotation2d.fromDegrees(target.getYaw()))); // Not sure if this will work, more math may be required.
       }
     });
+  }
+
+  public Command sysIdDriveMotorCommand() {
+    return SwerveDriveTest.generateSysIdCommand(
+        SwerveDriveTest.setDriveSysIdRoutine(new Config(), this, swerveDrive, 12), 3.0, 5.0, 3.0);
+  }
+
+  public Command sysIdAngleMotorCommand() {
+    return SwerveDriveTest.generateSysIdCommand(
+        SwerveDriveTest.setAngleSysIdRoutine(new Config(), this, swerveDrive), 3.0, 5.0, 3.0);
   }
 
 }
