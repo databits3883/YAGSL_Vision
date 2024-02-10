@@ -341,13 +341,15 @@ public class SwerveSubsystem extends SubsystemBase {
 
           if (opRobotPose != null) {
             if (isLogging)
-              logOutput.append("\r\nGot New Position from April tag id: " + id);
+              //logOutput.append("\r\nGot New Position from April tag id: " + id);
             if (opRobotPose.isPresent()) {
               EstimatedRobotPose estimatedRobotPose = opRobotPose.get();
-              if (isLogging)
+              if (isLogging) {
                 logOutput.append("\r\nestimatedRobotPose X/Y: " + estimatedRobotPose.estimatedPose.getX() + " / "
                     + estimatedRobotPose.estimatedPose.getY());
-              addVisionMeasurement(estimatedRobotPose.estimatedPose.toPose2d(), estimatedRobotPose.timestampSeconds);
+                logOutput.append("\r\nPose Ambiguity: " + target.getPoseAmbiguity());
+              }
+              swerveDrive.resetOdometry(estimatedRobotPose.estimatedPose.toPose2d());
             }
           } else {
             if (isLogging)

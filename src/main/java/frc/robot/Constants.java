@@ -79,7 +79,7 @@ public final class Constants
     public static final String pipelineName = "apriltag";
 
     //How accurate the bot needs the estimated position to be to update field pos (lower = better)
-    public static final double acceptibleAmbiguity = 0.1;
+    public static final double acceptibleAmbiguity = 0.25;
 
     //If false, will not automatically update our pose
     public static final boolean autoUpdatePose = true;
