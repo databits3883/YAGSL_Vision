@@ -329,8 +329,6 @@ public class SwerveSubsystem extends SubsystemBase {
         Optional<Pose3d> hasTargetPose = RobotContainer.getRobotVision().getAprilTagPose(id);
         if (hasTargetPose.isPresent()) {
           Pose3d targetPose = hasTargetPose.get();
-          // System.out.println("targetPose X/Y: " + targetPose.getX() + " / " +
-          // targetPose.getY());
 
           if(target.getPoseAmbiguity() >= Constants.VisionConstants.acceptibleAmbiguity)
              return;
@@ -342,15 +340,15 @@ public class SwerveSubsystem extends SubsystemBase {
             if (opRobotPose.isPresent()) {
               EstimatedRobotPose estimatedRobotPose = opRobotPose.get();
               if (isLogging) {
-                logOutput.append("\r\nestimatedRobotPose X/Y: " + estimatedRobotPose.estimatedPose.getX() + " / "
+                logOutput.append("\nestimatedRobotPose X/Y: " + estimatedRobotPose.estimatedPose.getX() + " / "
                     + estimatedRobotPose.estimatedPose.getY());
-                logOutput.append("\r\nPose Ambiguity: " + target.getPoseAmbiguity());
+                logOutput.append("\nPose Ambiguity: " + target.getPoseAmbiguity());
               }
               swerveDrive.resetOdometry(estimatedRobotPose.estimatedPose.toPose2d());
             }
           } else {
             if (isLogging)
-              logOutput.append("\r\nApril Tag seen with no POSE NOT PRESENT!!");
+              logOutput.append("\nApril Tag seen with no POSE NOT PRESENT!!");
           }
         }
 
