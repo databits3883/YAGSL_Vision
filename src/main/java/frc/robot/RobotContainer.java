@@ -42,8 +42,8 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),Constants.ROBOT_FROGGY_CONFIG_LOCATION));
   
-  //Vision
-  public static VisionSubsystem robotVision = new VisionSubsystem(Constants.VisionConstants.cameraY, Constants.VisionConstants.cameraX, Constants.VisionConstants.cameraZ, Constants.VisionConstants.cameraName);
+  //Vision, set to default no camera mode
+  private static VisionSubsystem m_robotVision = new VisionSubsystem();
 
   // The driver's controller
   Joystick m_driverController = new Joystick(OIConstants.kDriverControllerPort);
@@ -55,6 +55,13 @@ public class RobotContainer
   SendableChooser<Command> m_autoChooser = AutoBuilder.buildAutoChooser();
 
   public static DriverStation.Alliance allianceColor = DriverStation.Alliance.Blue;
+
+  public static VisionSubsystem getRobotVision() {
+    return m_robotVision;
+  }
+  public static void setRobotVision(VisionSubsystem robotVision) {
+    m_robotVision = robotVision;
+  }
 
   public static boolean isRedAlliance() 
   {
@@ -81,6 +88,12 @@ public class RobotContainer
    */
   public RobotContainer()
   {
+    //Set up the camera
+    if (Constants.VisionConstants.hasCamera)
+    {
+      RobotContainer.setRobotVision(new VisionSubsystem(Constants.VisionConstants.cameraY, Constants.VisionConstants.cameraX, Constants.VisionConstants.cameraZ, Constants.VisionConstants.cameraName));
+    } 
+
     // Configure the trigger bindings
     configureBindings();
     
@@ -169,15 +182,20 @@ public class RobotContainer
     //Calibrate the robot button
     m_calibrateButton.onTrue((new InstantCommand(this::zeroGyroWithAlliance)));
 
-    //Debug vision button
-    new JoystickButton(m_driverController, 14).onTrue(new InstantCommand(drivebase::visionPose));
 
-    //Test drive to post button
+    //Test drive to pose button
     new JoystickButton(m_driverController, 13).onTrue(drivebase.driveToPose(Constants.PoseConstants.autoEndPose));
 
-    //Test aim at a target function, no idea if it works
-    //TODO: TEST this
-    new JoystickButton(m_driverController, 15).onTrue(drivebase.aimAtTarget(robotVision.getTarget()));
+    //Add buttons based on vision
+    if (Constants.VisionConstants.hasCamera)
+    {
+      //Test aim at a target function, no idea if it works
+      //TODO: TEST this
+      new JoystickButton(m_driverController, 15).onTrue(drivebase.aimAtTarget(m_robotVision.getTarget()));
+      //Debug vision button
+      new JoystickButton(m_driverController, 14).onTrue(new InstantCommand(drivebase::visionPose));
+
+    }
   }
 
   /**

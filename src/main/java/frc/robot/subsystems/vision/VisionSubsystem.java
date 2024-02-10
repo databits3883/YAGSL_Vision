@@ -24,8 +24,27 @@ public class VisionSubsystem  extends SubsystemBase {
    private AprilTagFieldLayout aprilTagFieldLayout;
    private PhotonPoseEstimator photonPoseEstimator;
    private PhotonPipelineResult pipelineResult;
+   private boolean m_hasCameraEnabled = false;
 
-   public VisionSubsystem(double cameraFrontToBackInMeters, double cameraSideToSideInMeters, double cameraHeightInMeters, String cameraName) {
+   /**
+    * Empty, no camera - set camera enabled to false, basically return empty for all methods
+    */
+   public VisionSubsystem()
+   {
+     m_hasCameraEnabled = false;
+   } 
+
+   /**
+    * Real constructor, create camera object
+    * @param cameraFrontToBackInMeters
+    * @param cameraSideToSideInMeters
+    * @param cameraHeightInMeters
+    * @param cameraName
+    */
+   public VisionSubsystem(double cameraFrontToBackInMeters, double cameraSideToSideInMeters, double cameraHeightInMeters, String cameraName) 
+   {
+      m_hasCameraEnabled = true;
+
       System.out.println("Vision: About to connect to camera");
       this.camera = new PhotonCamera(cameraName);
       System.out.println("Vision: got Camera: " + this.camera.getName());
@@ -50,6 +69,9 @@ public class VisionSubsystem  extends SubsystemBase {
    }
 
    public Pose2d debugClosestTarget() {
+      //quick return if camera is not enabled
+      if (m_hasCameraEnabled == false) return null;      
+
       Pose2d visionEstimatedRobotPose = null;
       PhotonTrackedTarget target = null;
       PhotonPipelineResult result = this.camera.getLatestResult();
@@ -91,6 +113,9 @@ public class VisionSubsystem  extends SubsystemBase {
    }
 
    public PhotonTrackedTarget getTarget() {
+      //quick return if camera is not enabled
+      if (m_hasCameraEnabled == false) return null;      
+
       PhotonTrackedTarget target = null;
       PhotonPipelineResult result = this.camera.getLatestResult();
       boolean hasTargets = result.hasTargets();
@@ -102,10 +127,19 @@ public class VisionSubsystem  extends SubsystemBase {
    }
 
    public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
+      //quick return if camera is not enabled
+      if (m_hasCameraEnabled == false)
+      {
+         return null;
+      } 
+
       return photonPoseEstimator.update(pipelineResult);
    }
 
-   public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d previousPose) {
+   public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d previousPose) 
+   {
+      //quick return if camera is not enabled
+      if (m_hasCameraEnabled == false) return null;      
 
       photonPoseEstimator.setReferencePose(previousPose);
       return photonPoseEstimator.update();
@@ -117,6 +151,7 @@ public class VisionSubsystem  extends SubsystemBase {
 
    @Override
    public void periodic() {
-       pipelineResult = camera.getLatestResult();
+      if (m_hasCameraEnabled)
+         pipelineResult = camera.getLatestResult();
    }   
 }

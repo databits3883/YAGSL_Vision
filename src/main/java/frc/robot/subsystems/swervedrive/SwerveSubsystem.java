@@ -54,10 +54,7 @@ public class SwerveSubsystem extends SubsystemBase {
    * Swerve drive object.
    */
   private final SwerveDrive swerveDrive;
-  /**
-   * Maximum speed of the robot in meters per second, used to limit acceleration.
-   */
-  public double maximumSpeed = Units.feetToMeters(14.5);
+  
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -88,7 +85,7 @@ public class SwerveSubsystem extends SubsystemBase {
     // objects being created.
     SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
     try {
-      swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed);
+      swerveDrive = new SwerveParser(directory).createSwerveDrive(Constants.ROBOT_MAX_SPEED);
       // Alternative method if you don't want to supply the conversion factor via JSON
       // files.
       // swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed,
@@ -109,7 +106,7 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param controllerCfg Swerve Controller.
    */
   public SwerveSubsystem(SwerveDriveConfiguration driveCfg, SwerveControllerConfiguration controllerCfg) {
-    swerveDrive = new SwerveDrive(driveCfg, controllerCfg, maximumSpeed);
+    swerveDrive = new SwerveDrive(driveCfg, controllerCfg, Constants.ROBOT_MAX_SPEED);
   }
 
   /**
@@ -326,10 +323,10 @@ public class SwerveSubsystem extends SubsystemBase {
       //Will want to check poseAmbiguity and if less than 0.21 then update, otherwise ignore vision pose
       if (Constants.VisionConstants.autoUpdatePose){
         
-      PhotonTrackedTarget target = RobotContainer.robotVision.getTarget();
+      PhotonTrackedTarget target = RobotContainer.getRobotVision().getTarget();
       if (target != null) {
         int id = target.getFiducialId();
-        Optional<Pose3d> hasTargetPose = RobotContainer.robotVision.getAprilTagPose(id);
+        Optional<Pose3d> hasTargetPose = RobotContainer.getRobotVision().getAprilTagPose(id);
         if (hasTargetPose.isPresent()) {
           Pose3d targetPose = hasTargetPose.get();
           // System.out.println("targetPose X/Y: " + targetPose.getX() + " / " +
@@ -337,7 +334,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
           if(target.getPoseAmbiguity() >= Constants.VisionConstants.acceptibleAmbiguity)
              return;
-          Optional<EstimatedRobotPose> opRobotPose = RobotContainer.robotVision.getEstimatedGlobalPose();
+          Optional<EstimatedRobotPose> opRobotPose = RobotContainer.getRobotVision().getEstimatedGlobalPose();
 
           if (opRobotPose != null) {
             if (isLogging)
@@ -500,7 +497,7 @@ public class SwerveSubsystem extends SubsystemBase {
         headingX,
         headingY,
         getHeading().getRadians(),
-        maximumSpeed);
+        Constants.ROBOT_MAX_SPEED);
   }
 
   /**
@@ -520,7 +517,7 @@ public class SwerveSubsystem extends SubsystemBase {
         yInput,
         angle.getRadians(),
         getHeading().getRadians(),
-        maximumSpeed);
+        Constants.ROBOT_MAX_SPEED);
   }
 
   /**
@@ -587,7 +584,7 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   public void visionPose() {
     long currentTimeMillis = System.currentTimeMillis();
-    Pose2d debugTarget = RobotContainer.robotVision.debugClosestTarget();
+    Pose2d debugTarget = RobotContainer.getRobotVision().debugClosestTarget();
     if(debugTarget != null){
     //  swerveDrive.addVisionMeasurement(debugTarget, currentTimeMillis);
       swerveDrive.resetOdometry(debugTarget);
